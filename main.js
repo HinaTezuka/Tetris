@@ -73,9 +73,6 @@
                 [0,0,0,0,0,0,0,0,0,0]] 
     
     let field = Array(20).fill().map(() => Array(10).fill(0));
-    console.log('filed: ',field)
-
-    console.log('copyfiled: ',copyField)
     const width = 10;//fieldの横の長さ
     const height = 20;
 
@@ -173,15 +170,16 @@
         }
         newPosition = []
         for (let j = 0; j < position.length; j++){
-            let x = position[i][0]
-            let y = position[i][1]
+            let x = position[j][0]
+            let y = position[j][1]
             newPosition.push([x+1, y])
         }
         return newPosition
-    }
+      }
 
     //左に移動
-    function left(position){
+    function left(position){  
+        console.log("position: ",position)
         for (let i = 0; i < position.length; i++){
             let x = position[i][0]
             let y = position[i][1]
@@ -191,16 +189,16 @@
         }
         newPosition = []
         for (let j = 0; j < position.length; j++){
-            let x = position[i][0]
-            let y = position[i][1]
+            let x = position[j][0]
+            let y = position[j][1]
             newPosition.push([x-1, y])
         }
+    
         return newPosition
     }
 
     //回転
-    function rotet(position){
-
+    function rotate(position){
 
         newPosition = []
         let centerx = 0
@@ -209,11 +207,12 @@
             centerx += position[i][0]
             centery += position[i][1]
         }
+    
         for (let j = 0; j < position.length; j++){
-            let x = position[j][0]
-            let y = position[j][1]
-            let X = Math.round(x*Math.cos(-Math.PI/2) - y*Math.sin(-Math.PI/2) + centerx)
-            let Y = Math.round(y*Math.cos(-Math.PI/2) + x*Math.sin(-Math.PI/2) + centery)
+            let x = position[j][0]-(centerx/4)
+            let y = position[j][1]-(centery/4)
+            let X = Math.floor(x*Math.cos(Math.PI/2) - y*Math.sin(Math.PI/2) + (centerx/4))
+            let Y = Math.floor(y*Math.cos(Math.PI/2) + x*Math.sin(Math.PI/2) + (centery/4))
             newPosition.push([X,Y])
         }
         return newPosition
@@ -243,13 +242,11 @@
     //消して描いて消して描いてを考える
     //最初の描く部分は考えていない
     function updateCopyField(copyField, newposition){
-
-        console.log("drow:", copyField)
         //newpositionをcopyFieldに反映させる
         for (let i = 0; i < newposition.length; i++){
             let x = newposition[i][0]
             let y = newposition[i][1]
-            copyField[y][x] = 2
+            copyField[y][x] = 2 //テトリミノの種類によって数字を変えれば色も変えれるかも
         }
 
         //copyfileddrow()
@@ -277,11 +274,10 @@
     function copyfileddrow(copyField){
         const red = '#ff0000'
         const grey = '#CCCCCC' 
-        console.log('copyfileddrow: ',copyField)
 
         for (let y = 0; y < copyField.length; y++){
             for (let x = 0; x < copyField[0].length; x++){
-                if (copyField[y][x] == 2){
+                if (copyField[y][x] == 2){//2以上にするとテトリミノの種類に応じて色変更ができるかも．hashmapを用いれば
                     draw(x, y, red)
                 }
                 else if(copyField[y][x] <= 1){
@@ -337,9 +333,11 @@
 
   //描く関数をまとめてみる
     function alldrow(copyField, position){
+        //console.log('beforposition: ', position)
         updateCopyField(copyField, position)
+        //console.log('aftercopyfield: ', copyField)
         copyfileddrow(copyField)
-        //block(field, updatecopyfield, position)
+        //block(field, copyfield, position)
 
     }
     let hhh = true;
@@ -363,15 +361,69 @@
   context.fillStyle = gray; // グレー色
   context.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
 
-  // テトリミノの初期位置を取得
-  let position;
-  position = getxy(tetriminoPattern);
+    // テトリミノの初期位置を取得
+    let position;
+    position = getxy(tetriminoPattern);
+    alldrow(copyField, position)
+    for (let i = 0; i < position.length; i++){
+        let x = position[i][0]
+        let y = position[i][1]
+        copyField[y][x] = 1
+    }
+
+    //function keyindex(field, position, copyField) {}
+        
+        const hashmap = {
+            ArrowRight: () => right(position),
+            ArrowLeft: () => left(position),
+            ArrowUp: () => rotate(position),
+            ArrowDown: () => under(field, position)
+        };
+        document.addEventListener("keydown", function (event) {
+            // key プロパティによってどのキーが押されたかを調べます。
+            // code プロパティを使うと大文字/小文字が区別されます。
+            // 何かキーボードの押して、コンソールに出力されているか確かめましょう。
+            if (hashmap[event.key]) {
+
+
+                for (let i = 0; i < position.length; i++){
+                    let x = position[i][0]
+                    let y = position[i][1]
+                    copyField[y][x] = 1
+                }
+                position = hashmap[event.key]();
+                alldrow(copyField, position)
+            }
+            return position
+        });
+
+    
+
+
+
+/* 
+    function control (e, position) {
+
+        if(e.keyCode === 37) {
+            console.log(left(position))
+            left(position)
+        } else if (e.keyCode === 38) {
+            rotate(position)
+        } else if (e.keyCode === 39) {
+            right(position)
+        } else if (e.keyCode === 40) {
+            under(field, position)
+        }
+    }
+    document.addEventListener('keydown', control(context, position)) */
 
   // drawTetrimino(context, position, gray);
 
     const intervalId = setInterval(() => {
-        console.log("befor: ",copyField)
-        alldrow(copyField, position)
+
+
+        
+        
         
         if (underjudge(field,position)){
             clearInterval(intervalId);
@@ -384,9 +436,12 @@
                 copyField[y][x] = 1
             } 
             position = under(field, position)
+            alldrow(copyField, position)
+            
         } 
 
-    }, 250);
+    }, 2000);
+
 
 /*     //描く関数をまとめてみる
     function alldrow(field, copyField, position){
@@ -426,41 +481,5 @@
     }
 
 
-/* 
 
-    //console.log(block(field, [[3, 4]])[4]);
-
-    //0,0-3,0
-    //1,1-2,1
-    //3,0-3,3
-    //3,1-2,3
-    [x][y]
-    [[1 ,2 ,3 ,4 ],
-    [5 ,6 ,7 ,8 ],
-    [9 ,10,11,12],
-    [13,14,15,16]]
-
-    [y][x]
-    [[1, 5, 9,13],
-    [2, 6,10,14],
-    [3, 7,11,15],
-    [4, 8,12,16]]
-
-    [3-y][x]
-    [[13, 9, 5, 1],
-    [14,10, 6, 2],
-    [15,11, 7, 3],
-    [16,12, 8, 4]]
-
-
-    
-    [[0,0,1,0],
-    [0,1,1,1],
-    [0,0,0,0],
-    [0,0,0,0]]
-
-    [[0,0,0,0],
-    [0,0,1,0],
-    [0,0,1,1],
-    [0,0,1,0]] */
 }); 
