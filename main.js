@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
   //HTMLのスコア表示のため↓
   const scoreDisplay = document.querySelector('#score')
@@ -32,22 +31,17 @@ document.addEventListener('DOMContentLoaded', function() {
           [0,1,0,0],
           [0,1,0,0],
           [0,0,0,0]]]
-          //[1, 3],   [1, 2],  [1, 1],   [2, 1]   回転前
-          //x:-1,y:-2 x:0,y:-1 x:+1,y:0  x:0,y:+1
-          //[[0, 1],  [1, 1],  [2, 1],   [2, 2]]　回転前の座標が回転することによりどこに移ったか（xとyの変化量をそれぞれ記憶する）
 
       return tetoriminos[num]
-
   }
+
   const red = '#ff0000'
   const gray = '#CCCCCC' 
   const green = '#008000'
   const yellow = '#ffff00'
   const purple = '#800080'
   const blue = '#0000ff'
-  const color = [green, red, purple, blue, yellow, gray] 
-
-
+  const color = [green, red, purple, blue, yellow, gray]
 
   let copyField = Array(20).fill().map(() => Array(10).fill(0));
   
@@ -62,11 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
               field[i].fill(0)
               //scoreを保存する
               point = score(point)
-              console.log(point)
+              //console.log(point)
               //消えた分下に下がる
               down(i, field)
-              // console.log(field)
-
           }
       }
       return point
@@ -147,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       return newPosition
   }
+
   //右に移動
   function right(position){
       // console.log(field)
@@ -204,72 +197,97 @@ document.addEventListener('DOMContentLoaded', function() {
           let Y = Math.floor(y*Math.cos(Math.PI/2) + x*Math.sin(Math.PI/2) + (centery/4))
           newPosition.push([X,Y])
       }
+      newPosition = revisePositionIfOverflow(newPosition)
       return newPosition
   }
 
-  /* 
-  //全ての関数が描くのに関係している
-
-  //positionをcopyFieldに反映させる
-  //updatecopyfiledで代用できるかも
-  function startCopyField(copyField, position){
-      for (let i = 0; i < position.length(); i++){
-          let x = position[i][0]
-          let y = position[i][1]
-          copyField[y][x] = 1
+  /* テトリミノのx, y座標のはみ出している部分を見つける(あるかどうかも含めて)。
+     もしあったら、はみ出ている部分を修正する　*/
+    function revisePositionIfOverflow(position) {
+      /* x座標のはみ出している部分を見つける(あるかどうかも含めて)。もしあったら、はみ出ている部分を修正する */
+       function revisePositionOfX(position) {
+        let maxOutX = -1 
+        let minOutX = 1
+        for (let i = 0; i < position.length; i++) {
+            // もし＋にはみ出ているx座標があったら、maxを計算
+            if (position[i][0] > 9) {
+              maxOutX = Math.max(maxOutX, position[i][0]);
+            }
+            // もし-にはみ出ているx座標があったら、minを計算
+            if (position[i][0] < 0) {
+              minOutX = Math.min(minOutX, position[i][0]);
+            }
+        }
+        // はみ出している部分があるかどうか確かめ、あれば修正(なければそのまま元のpositionを返す)
+        let newPosition = []
+        if (maxOutX != -1) {
+          for(let i = 0; i < position.length; i++) {
+            newPosition.push([position[i][0] - (maxOutX-9), position[i][1]]);
+          }
+        }
+        else if (minOutX != 1) {
+          for(let i = 0; i < position.length; i++) {
+            newPosition.push([position[i][0] - minOutX, position[i][1]]);
+          }
+        } else {
+          return position
+        }
+        return newPosition
       }
-      return copyField
-  }
-  //startdopyfielddrow()
-  //最初のだけ描く
-  function startcopyfileddrow(copyField){
-
-  }
-
-  */
+      /* y座標のはみ出している部分を見つける(あるかどうかも含めて)。もしあったら、はみ出ている部分を修正する*/ 
+      function revisePositionOfY(position) {
+        let maxOutY = -1
+        let minOutY = 1
+        for (let i = 0; i < position.length; i++) {
+            // もし＋にはみ出ているy座標があったら、maxを計算
+            if (position[i][1] > 19) {
+              maxOutY = Math.max(maxOutY, position[i][1]);
+            }
+            // もし-にはみ出ているy座標があったら、minを計算
+            if (position[i][1] < 0) {
+              minOutY = Math.min(minOutY, position[i][1]);
+            }
+        }
+        // はみ出している部分があるかどうか確かめ、あれば修正(なければそのまま元のpositionを返す)
+        let newPosition = []
+        if (maxOutY != -1) {
+          for(let i = 0; i < position.length; i++) {
+            newPosition.push([position[i][0], position[i][1] - (maxOutY-19)]);
+          }
+        }
+        else if (minOutY != 1) {
+          for(let i = 0; i < position.length; i++) {
+            newPosition.push([position[i][0], position[i][1] - minOutY]);
+          }
+        } else {
+          return position
+        }
+        return newPosition
+      }
+      let revesedPosition = revisePositionOfY(revisePositionOfX(position));
+      return revesedPosition
+    }
 
   //消して描いて消して描いてを考える
   //最初の描く部分は考えていない
-  function updateCopyField(copyField, newposition){
-      //newpositionをcopyFieldに反映させる
-      // console.log(copyField)
-      // console.log(newposition)
-      for (let i = 0; i < newposition.length; i++){
-          let x = newposition[i][0]
-          let y = newposition[i][1]
-          copyField[y][x] = 2 //テトリミノの種類によって数字を変えれば色も変えれるかも
-      }
-
-      //copyfileddrow()
-      //1のところは消す2のところは描く
-      //描くときについでに1は0にできるかも
-
-
-
-
-      //2のままだと固定（もしくは1は一つ前のposition, 2はnewposition, 3は固定でもありかも）
-      //underjudge()
-      //false
-      //2にしたところを1
-      //true
-      //2のままにして新しいテトリミノについて動作をする
-      //固定のブロックは2にしておく
-
-
-
+  function updateCopyField(copyField, newposition, randomNumber){
+    //newpositionをcopyFieldに反映させる
+    //console.log(copyField)
+    //console.log(copyField)
+    for (let i = 0; i < newposition.length; i++){
+        let x = newposition[i][0]
+        let y = newposition[i][1]
+        copyField[y][x] = 2 + randomNumber//テトリミノの種類によって数字を変えれば色も変えれるかも
+    }
   }
-      //copyfileddrow()
-      //1のところは消す
-      //固定のブロックは2にしておく
-      //描くときについでに1は0にできるかも
   function copyfielddrow(copyField, ramdomNumber){
       const red = '#ff0000'
       const grey = '#CCCCCC' 
 
       for (let y = 0; y < copyField.length; y++){
           for (let x = 0; x < copyField[0].length; x++){
-              if (copyField[y][x] == 2){//2以上にするとテトリミノの種類に応じて色変更ができるかも．hashmapを用いれば
-                  draw(x, y, color[randomNumber])
+              if (copyField[y][x] >= 2){//2以上にするとテトリミノの種類に応じて色変更ができるかも．hashmapを用いれば
+                  draw(x, y, color[copyField[y][x]-2])
               }
               else if(copyField[y][x] <= 1){
                   copyField[y][x] = 0
@@ -286,40 +304,34 @@ document.addEventListener('DOMContentLoaded', function() {
       context.fillRect(x*cellSize, y*cellSize, cellSize, cellSize)
   }
 
-//描く関数をまとめてみる
+  //描く関数をまとめてみる
   function alldrow(copyField, position,randomNumber){
-      //console.log('beforposition: ', position)
-      updateCopyField(copyField, position)
-      //console.log('aftercopyfield: ', copyField)
-      copyfielddrow(copyField, randomNumber)
-      //block(field, copyfield, position)
+    updateCopyField(copyField, position, randomNumber)
+    copyfielddrow(copyField, randomNumber)
 
-  }
+}
   //最初の地点
 
-// mainCanvasの呼び出し
-const mainCanvas = document.getElementById('tetrisCanvas');
+  // mainCanvasの呼び出し
+  const mainCanvas = document.getElementById('tetrisCanvas');
 
-// ↓canvasで2次元描画をするために必要らしい
-const context = mainCanvas.getContext('2d');
-// グレーの背景を塗りつぶす
-context.fillStyle = gray; // グレー色
-context.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+  // ↓canvasで2次元描画をするために必要らしい
+  const context = mainCanvas.getContext('2d');
+  // グレーの背景を塗りつぶす
+  context.fillStyle = gray; // グレー色
+  context.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
 
-
-// miniCanvasの呼び出し
-const miniCanvas = document.getElementById('miniCanvas');
-const miniContext = miniCanvas.getContext('2d');
-
-/* 0~4のランダムな整数を取得して、
-   ランダムなテトリミノを１つ取得 */
-let randomNumber = Math.floor(Math.random() * 5);
-let tetriminoPattern = tetrimino(randomNumber);
-
-
-function nextTetrimino(){
-  miniContext.fillStyle = '#CCCCCC'; // グレー色
-  miniContext.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
+  /* 0~4のランダムな整数を取得して、
+      ランダムなテトリミノを１つ取得 */
+  // miniCanvasの呼び出し
+  const miniCanvas = document.getElementById('miniCanvas');
+  const miniContext = miniCanvas.getContext('2d');
+  
+  /* 0~4のランダムな整数を取得して、
+      ランダムなテトリミノを１つ取得 */
+  let randomNumber = Math.floor(Math.random() * 5);
+  let tetriminoPattern = tetrimino(randomNumber);
+  //  console.log('randomtetorimino', randomNumber)
   function miniGetxy(tetrimino){
     const twidth = 4
     const theight = 4
@@ -334,23 +346,32 @@ function nextTetrimino(){
     return position
   } 
 
-  // 次のテトリミノの呼び出し
-  let nextRandomNumber = Math.floor(Math.random() * 5);
-  let nextTetriminoPattern = tetrimino(nextRandomNumber);
-  // テトリミノのminiCanvas内での位置を取得
-  let nextPosition;
-  nextPosition = miniGetxy(nextTetriminoPattern);
-  // miniCanvasに描画
-  const cellSize = 20
-  for (let i = 0; i < nextPosition.length; i++) {
-    let x = nextPosition[i][0]
-    let y = nextPosition[i][1]
-    miniContext.fillStyle = '#ff0000'
-    miniContext.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+  function nextTetrimino(){
+    miniContext.fillStyle = '#CCCCCC'; // グレー色
+    miniContext.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
+
+  
+    // 次のテトリミノの呼び出し
+    let nextRandomNumber = Math.floor(Math.random() * 5);
+    let nextTetriminoPattern = tetrimino(nextRandomNumber);
+    // テトリミノのminiCanvas内での位置を取得
+    let nextPosition;
+    nextPosition = miniGetxy(nextTetriminoPattern);
+     
+    // miniCanvasに描画
+    const cellSize = 20
+    for (let i = 0; i < nextPosition.length; i++) {
+      let x = nextPosition[i][0]
+      let y = nextPosition[i][1]
+      miniContext.fillStyle = color[nextRandomNumber]
+      miniContext.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    }
+    return [nextTetriminoPattern,nextRandomNumber]
   }
-  return nextTetriminoPattern
-}
-next = nextTetrimino()
+  nextlist = nextTetrimino()
+  next = nextlist[0]
+  nextRandomNumber = nextlist[1]
 
   function mainTetrimino(tetriminoPattern){
     // テトリミノの初期位置を取得
@@ -359,15 +380,8 @@ next = nextTetrimino()
     if (gameover(position,field)){
       return "gameover"
     }
-    // alldrow(copyField, position)
-    // for (let i = 0; i < position.length; i++){
-    //     let x = position[i][0]
-    //     let y = position[i][1]
-    //     copyField[y][x] = 1
-    // }  
     return position
   }
-  //function keyindex(field, position, copyField) {}
       
   const hashmap = {
       ArrowRight: () => right(position),
@@ -376,20 +390,23 @@ next = nextTetrimino()
       ArrowDown: () => under(field, position)
   };
   document.addEventListener("keydown", function (event) {
-      // key プロパティによってどのキーが押されたかを調べます。
-      // code プロパティを使うと大文字/小文字が区別されます。
-      // 何かキーボードの押して、コンソールに出力されているか確かめましょう。
-      if (hashmap[event.key]) {
-          for (let i = 0; i < position.length; i++){
-              let x = position[i][0]
-              let y = position[i][1]
-              copyField[y][x] = 1
+        if (hashmap[event.key]) {
+          // 下に移動する前に衝突判定を行う
+          if (underjudge(field, position)) {
+            // 下にブロックがある場合、無効化して処理を終了する
+            return;
           }
-          position = hashmap[event.key]();
-          alldrow(copyField, position,randomNumber)
-      }
-      return position
-  });
+            for (let i = 0; i < position.length; i++){
+                let x = position[i][0]
+                let y = position[i][1]
+                copyField[y][x] = 1
+            }
+            position = hashmap[event.key]();
+            alldrow(copyField, position,randomNumber)
+        }
+        return position
+    });
+
 
   //点数を保存
   function score(point){
@@ -397,7 +414,6 @@ next = nextTetrimino()
       scoreDisplay.innerHTML = point
       return point
   }
-
 
   //ゲームオーバー判定
   function gameover(position,field){
@@ -411,7 +427,6 @@ next = nextTetrimino()
       return false
   }
 
-
   //自動落下
   function autodown() {
     alldrow(copyField, position,randomNumber)
@@ -423,8 +438,6 @@ next = nextTetrimino()
         let y = position[i][1];
         field[y][x] = 1;
       }
-      
-
       return false;
     }
     else{
@@ -438,40 +451,62 @@ next = nextTetrimino()
     }
   }
 
-
   const winningMessageElement = document.getElementById('winningMessage');
   const winningMessageTextElement = document.querySelector('[data-winning-message-text');
   const restartButton = document.getElementById('restartButton');
 
+  const startButton = document.getElementById('start-button');
+  let isPaused = false;
+  let loop;
+
+  startButton.addEventListener('click', function() {
+    if (!isPaused) {
+      clearTimeout(loop);
+      startButton.innerText = 'Restart';
+    } else {
+      loopInterval();
+      startButton.innerText = 'Pause';
+    }
+    isPaused = !isPaused;
+  });
+
+  // loopInterval 関数内の setTimeout を条件付きで呼び出す
   function loopInterval() {
+    if (!isPaused) {
+      // 一時停止中でない場合にのみ自動落下を実行
       if (autodown() === true) {
         loop = setTimeout(loopInterval, speed);
-      }else{
-        //着地後の処理
-        console.log("着地");
-        //copyfileddrow(field)では落ちてきたテトリミノは消える
+      } else {
+        // 落下が止まった場合の処理
+        randomNumber = nextRandomNumber
         copyfielddrow(copyField);
-        disapper(copyField, point)
-        point = disapper(field, point)
-        // console.log(copyField);
-        // console.log(field);
-        if(mainTetrimino(next) == "gameover"){
-          console.log("12345678")
+        disapper(copyField, point);
+        point = disapper(field, point);
+        if (mainTetrimino(next) == "gameover") {
+          // ゲームオーバーの処理
           clearTimeout(loop);
-
-          playerpoint = score(point -10 )
-
-          winningMessageTextElement.innerText = `Score: ${playerpoint}`
+          playerpoint = score(point - 10);
+          if (highscore < playerpoint || typeof highscore === 'undefined'){
+            Highscore(playerpoint)
+            // console.log(highscore);
+          }
+          winningMessageTextElement.innerText = `Score: ${playerpoint}`;
           winningMessageElement.classList.add('show');
           restartButton.addEventListener('click', function(){location.reload()});
-          return
+          return;
         }
-        // console.log("aaaaaaaaaaaaaaaaaa")
-        // console.log(field)
-        next = nextTetrimino();
-        loopInterval()
+        // 次のテトリミノをセットし、ループを再開
+        nextlist = nextTetrimino();
+        next = nextlist[0]
+        nextRandomNumber = nextlist[1]
+        loopInterval();
       }
+    } else {
+      // 一時停止中の場合、再帰的に関数を呼び出して待機
+      loop = setTimeout(loopInterval, speed);
+    }
   }
+
 
   //メイン関数
   function main() {
@@ -479,5 +514,10 @@ next = nextTetrimino()
     loopInterval()
   }
   main()
+
+  function Highscore(point){
+    highscore = point;
+    return highscore;
+  }
 
 });
