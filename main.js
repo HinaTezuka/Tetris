@@ -335,10 +335,9 @@ next = nextTetrimino()
     // テトリミノの初期位置を取得
     let position;
     position = getxy(tetriminoPattern);
-    // if (gameover(position,field)){
-    //   console.log("gameover")
-    //   return 
-    // }
+    if (gameover(position,field)){
+      return "gameover"
+    }
     // alldrow(copyField, position)
     // for (let i = 0; i < position.length; i++){
     //     let x = position[i][0]
@@ -419,15 +418,19 @@ next = nextTetrimino()
 
   function loopInterval() {
       if (autodown() === true) {
-        setTimeout(loopInterval, speed);
+        loop = setTimeout(loopInterval, speed);
       }else{
         //着地後の処理
         console.log("着地");
         //copyfileddrow(field)では落ちてきたテトリミノは消える
         copyfielddrow(copyField);
-        // console.log(copyField);
-        // console.log(field);
-        mainTetrimino(next);
+        console.log(copyField);
+        console.log(field);
+        if(mainTetrimino(next) == "gameover"){
+          console.log("12345678")
+          clearTimeout(loop);
+          return
+        }
         next = nextTetrimino();
         loopInterval()
       }
@@ -436,14 +439,8 @@ next = nextTetrimino()
   //メイン関数
   function main() {
     mainTetrimino(tetriminoPattern);//最初のテトリミノ
-    if (gameover(position,field)){
-      console.log("gameover")
-      return 
-    }
-    alldrow(copyField, position)
     loopInterval()
-
   }
   main()
 
-}); 
+});
