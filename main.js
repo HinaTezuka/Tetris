@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const speed = 500;
+  const speed = 250;
   function tetrimino(num){
 
       const tetoriminos = [
@@ -35,42 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   }
 
-/*     //position =  [[7, 3], [7, 2], [7, 1], [8, 1]]
-  //              aaaaaaa
-  field = [[0,0,0,0,0,0,0,0,0,0],
-          [0,0,0,0,0,0,0,1,1,0],
-          [0,0,0,0,0,0,0,1,0,0],
-          [0,0,0,0,0,0,0,1,0,0],
-          [0,0,0,0,0,0,0,0,0,0],
-          [0,0,0,0,0,0,0,0,0,0],
-          [0,0,0,0,0,0,0,0,0,0]]
-          //回転後のposition
-          //[[6, 1], [7, 1], [8, 1], [8, 2]]
 
-  //□
-  //x = , y = 
-*/
 
-  var copyField = [[0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0],
-              [0,0,0,0,0,0,0,0,0,0]] 
+  let copyField = Array(20).fill().map(() => Array(10).fill(0));
   
   let field = Array(20).fill().map(() => Array(10).fill(0));
   const width = 10;//fieldの横の長さ
@@ -82,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (field[i].indexOf(0) == -1){
               field[i].fill(0)
               //scoreを保存する
-              score(point)
+              //score(point)
               //消えた分下に下がる
               down(i, field)
           }
@@ -161,6 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   //右に移動
   function right(position){
+      console.log(field)
+      console.log(copyField)
       for (let i = 0; i < position.length; i++){
           let x = position[i][0]
           let y = position[i][1]
@@ -366,12 +335,17 @@ next = nextTetrimino()
     // テトリミノの初期位置を取得
     let position;
     position = getxy(tetriminoPattern);
-    alldrow(copyField, position)
-    for (let i = 0; i < position.length; i++){
-        let x = position[i][0]
-        let y = position[i][1]
-        copyField[y][x] = 1
-    }  
+    // if (gameover(position,field)){
+    //   console.log("gameover")
+    //   return 
+    // }
+    // alldrow(copyField, position)
+    // for (let i = 0; i < position.length; i++){
+    //     let x = position[i][0]
+    //     let y = position[i][1]
+    //     copyField[y][x] = 1
+    // }  
+    return position
   }
   //function keyindex(field, position, copyField) {}
       
@@ -411,10 +385,10 @@ next = nextTetrimino()
           let x = position[i][0]
           let y = position[i][1]
           if (field[y][x] == 1){
-              return false
+              return true
           }
       }
-      return true
+      return false
   }
 
 
@@ -424,7 +398,13 @@ next = nextTetrimino()
     
     if (underjudge(field,position)){
         // 新しいテトリミノを生み出す
-        return false;
+      for (let i = 0; i < position.length; i++){
+        let x = position[i][0];
+        let y = position[i][1];
+        field[y][x] = 1;
+      }
+
+      return false;
     }
     else{
         for (let i = 0; i < position.length; i++){
@@ -439,13 +419,14 @@ next = nextTetrimino()
 
   function loopInterval() {
       if (autodown() === true) {
-          setTimeout(loopInterval, speed);
+        setTimeout(loopInterval, speed);
       }else{
         //着地後の処理
         console.log("着地");
         //copyfileddrow(field)では落ちてきたテトリミノは消える
         copyfielddrow(copyField);
-        console.log(copyField);
+        // console.log(copyField);
+        // console.log(field);
         mainTetrimino(next);
         next = nextTetrimino();
         loopInterval()
@@ -454,8 +435,14 @@ next = nextTetrimino()
 
   //メイン関数
   function main() {
-    mainTetrimino(tetriminoPattern);
-    loopInterval();
+    mainTetrimino(tetriminoPattern);//最初のテトリミノ
+    if (gameover(position,field)){
+      console.log("gameover")
+      return 
+    }
+    alldrow(copyField, position)
+    loopInterval()
+
   }
   main()
 
