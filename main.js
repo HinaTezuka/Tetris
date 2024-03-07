@@ -34,6 +34,13 @@
         return tetoriminos[num]
 
     }
+    const red = '#ff0000'
+    const gray = '#CCCCCC' 
+    const green = '#008000'
+    const yellow = '#ffff00'
+    const purple = '#800080'
+    const blue = '#0000ff'
+    const color = [green, red, purple, blue, yellow, gray] 
 
 /*     //position =  [[7, 3], [7, 2], [7, 1], [8, 1]]
     //              aaaaaaa
@@ -271,18 +278,16 @@
         //1のところは消す
         //固定のブロックは2にしておく
         //描くときについでに1は0にできるかも
-    function copyfileddrow(copyField){
-        const red = '#ff0000'
-        const grey = '#CCCCCC' 
+    function copyfileddrow(copyField, randomNumber){
 
         for (let y = 0; y < copyField.length; y++){
             for (let x = 0; x < copyField[0].length; x++){
-                if (copyField[y][x] == 2){//2以上にするとテトリミノの種類に応じて色変更ができるかも．hashmapを用いれば
-                    draw(x, y, red)
+                if (copyField[y][x] >= 2){//2以上にするとテトリミノの種類に応じて色変更ができるかも．hashmapを用いれば
+                    draw(x, y, color[randomNumber])
                 }
                 else if(copyField[y][x] <= 1){
                     copyField[y][x] = 0
-                    draw(x, y, grey)
+                    draw(x, y, gray)
                 }
             }
         }
@@ -332,15 +337,14 @@
     } */
 
   //描く関数をまとめてみる
-    function alldrow(copyField, position){
-        //console.log('beforposition: ', position)
+    function alldrow(copyField, position, randomNumber){
+
         updateCopyField(copyField, position)
-        //console.log('aftercopyfield: ', copyField)
-        copyfileddrow(copyField)
+
+        copyfileddrow(copyField, randomNumber)
         //block(field, copyfield, position)
 
     }
-    let hhh = true;
     //最初の地点
   // mainCanvasの呼び出し
   const mainCanvas = document.getElementById('tetrisCanvas');
@@ -348,13 +352,12 @@
   // ↓canvasで2次元描画をするために必要らしい
   const context = mainCanvas.getContext('2d');
 
-  // 使う色
-  const red = '#ff0000'
-  const gray = '#CCCCCC'
+
 
   /* 0~4のランダムな整数を取得して、
      ランダムなテトリミノを１つ取得 */
   let randomNumber = Math.floor(Math.random() * 5);
+  console.log(randomNumber)
   let tetriminoPattern = tetrimino(randomNumber);
 
   // グレーの背景を塗りつぶす
@@ -364,7 +367,7 @@
     // テトリミノの初期位置を取得
     let position;
     position = getxy(tetriminoPattern);
-    alldrow(copyField, position)
+    alldrow(copyField, position, randomNumber)
     for (let i = 0; i < position.length; i++){
         let x = position[i][0]
         let y = position[i][1]
@@ -380,9 +383,7 @@
             ArrowDown: () => under(field, position)
         };
         document.addEventListener("keydown", function (event) {
-            // key プロパティによってどのキーが押されたかを調べます。
-            // code プロパティを使うと大文字/小文字が区別されます。
-            // 何かキーボードの押して、コンソールに出力されているか確かめましょう。
+
             if (hashmap[event.key]) {
 
 
@@ -392,7 +393,7 @@
                     copyField[y][x] = 1
                 }
                 position = hashmap[event.key]();
-                alldrow(copyField, position)
+                alldrow(copyField, position, randomNumber)
             }
             return position
         });
@@ -436,7 +437,7 @@
                 copyField[y][x] = 1
             } 
             position = under(field, position)
-            alldrow(copyField, position)
+            alldrow(copyField, position, randomNumber)
             
         } 
 
