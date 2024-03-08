@@ -311,8 +311,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const cellSize = 20;
       context.fillRect(x*cellSize, y*cellSize, cellSize, cellSize)
       context.strokeStyle = 'black'; // 枠線の色
-      context.lineWidth = 2.5; // 枠線の太さ
-      context.strokeRect(0, 0, mainCanvas.width, mainCanvas.height);
+      context.lineWidth = 0.2; // 枠線の太さ
+      context.strokeRect(x*cellSize, y*cellSize, cellSize, cellSize);
   }
 
   //描く関数をまとめてみる
