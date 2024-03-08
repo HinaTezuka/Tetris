@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //衝突判定
     //衝突したらTrue
     function judge(x, y, field){
-        return field[y][x] != 0
+        return field[y][x] != 0 //&& field[y][x] != 7
     }
     //positionはfield上
     const twidht=4
@@ -140,10 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     field[y][x] = 1
                 }
                 //次のテトリミノ
+                loopInterval()
 
 
 
-                return;// block(field, position)
+
             }
             
         }
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
             newPosition.push([x+1, y])
         }
         return newPosition
-      }
+    }
   
     //左に移動
     function left(position){  
@@ -214,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return newPosition
     }
+
   
     /* 
     //全ての関数が描くのに関係している
@@ -293,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //block(field, copyfield, position)
   
     }
-
+    //一番下まで行ける関数
     function expectation(field, position){
         let i = 0
         while (true){
@@ -362,41 +364,41 @@ document.addEventListener('DOMContentLoaded', function() {
   
       // 次のテトリミノの呼び出し
 
-  function nextTetrimino(){
-    miniContext.fillStyle = '#CCCCCC'; // グレー色
-    miniContext.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
+    function nextTetrimino(){
+        miniContext.fillStyle = '#CCCCCC'; // グレー色
+        miniContext.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
 
-  
-    // 次のテトリミノの呼び出し
-    let nextRandomNumber = Math.floor(Math.random() * 5);
-    let nextTetriminoPattern = tetrimino(nextRandomNumber);
-    // テトリミノのminiCanvas内での位置を取得
-    let nextPosition;
-    nextPosition = miniGetxy(nextTetriminoPattern);
-     
-    // miniCanvasに描画
-    const cellSize = 20
-    for (let i = 0; i < nextPosition.length; i++) {
-      let x = nextPosition[i][0]
-      let y = nextPosition[i][1]
-      miniContext.fillStyle = color[nextRandomNumber]
-      miniContext.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    
+        // 次のテトリミノの呼び出し
+        let nextRandomNumber = Math.floor(Math.random() * 5);
+        let nextTetriminoPattern = tetrimino(nextRandomNumber);
+        // テトリミノのminiCanvas内での位置を取得
+        let nextPosition;
+        nextPosition = miniGetxy(nextTetriminoPattern);
+        
+        // miniCanvasに描画
+        const cellSize = 20
+        for (let i = 0; i < nextPosition.length; i++) {
+        let x = nextPosition[i][0]
+        let y = nextPosition[i][1]
+        miniContext.fillStyle = color[nextRandomNumber]
+        miniContext.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+        return [nextTetriminoPattern,nextRandomNumber]
     }
-    return [nextTetriminoPattern,nextRandomNumber]
-  }
     nextlist = nextTetrimino()
     next = nextlist[0]
     nextRandomNumber = nextlist[1]
   
     function mainTetrimino(tetriminoPattern){
-      // テトリミノの初期位置を取得
-      let position;
-      position = getxy(tetriminoPattern);
-      if (gameover(position,field)){
-        return "gameover"
-      }
+        // テトリミノの初期位置を取得
+        let position;
+        position = getxy(tetriminoPattern);
+        if (gameover(position,field)){
+            return "gameover"
+        }
 
-      return position
+        return position
     }
     //function keyindex(field, position, copyField) {}
         
@@ -404,13 +406,41 @@ document.addEventListener('DOMContentLoaded', function() {
         ArrowRight: () => right(position),
         ArrowLeft: () => left(position),
         ArrowUp: () => rotate(position),
-        ArrowDown: () => under(field, position)
+        ArrowDown: () => under(field, position),
+        Space: () => expectation(position)
     };
     document.addEventListener("keydown", function (event) {
         // key プロパティによってどのキーが押されたかを調べます。
         // code プロパティを使うと大文字/小文字が区別されます。
         // 何かキーボードの押して、コンソールに出力されているか確かめましょう。
         if (hashmap[event.key]) {
+            if (underjudge(field, position)){
+                // 落下が止まった場合の処理
+                for(let j = 0; j < position.length; j++){
+                    let p = position[j][0]
+                    let q = position[j][1]
+                    field[q][p] = 1
+                }
+                randomNumber = nextRandomNumber
+                copyfielddrow(copyField);
+                disapper(copyField, point);
+                point = disapper(field, point);
+                if (mainTetrimino(next) == "gameover") {
+                    // ゲームオーバーの処理
+                    clearTimeout(loop);
+                    playerpoint = score(point - 10);
+                    winningMessageTextElement.innerText = `Score: ${playerpoint}`;
+                    winningMessageElement.classList.add('show');
+                    restartButton.addEventListener('click', function(){location.reload()});
+                    return;
+                }
+                // 次のテトリミノをセットし、ループを再開
+                nextlist = nextTetrimino();
+                next = nextlist[0]
+                nextRandomNumber = nextlist[1]
+                loopInterval();
+            }
+
             for (let i = 0; i < position.length; i++){
                 let x = position[i][0]
                 let y = position[i][1]
@@ -445,19 +475,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
   
-    //自動落下
     function autodown() {
-      alldrow(copyField, position,randomNumber,field)
-      
+        alldrow(copyField, position,randomNumber, field)
+        
         if (underjudge(field,position)){
             // 新しいテトリミノを生み出す
             for (let i = 0; i < position.length; i++){
-            let x = position[i][0];
-            let y = position[i][1];
-            field[y][x] = 1;
+                let x = position[i][0];
+                let y = position[i][1];
+                field[y][x] = 1;
             }
-            
-    
             return false;
         }
         else{
@@ -471,56 +498,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
   
-  
     const winningMessageElement = document.getElementById('winningMessage');
     const winningMessageTextElement = document.querySelector('[data-winning-message-text');
     const restartButton = document.getElementById('restartButton');
   
+    const startButton = document.getElementById('start-button');
+    let isPaused = false;
+    let loop;
+  
+    startButton.addEventListener('click', function() {
+      if (!isPaused) {
+        clearTimeout(loop);
+        startButton.innerText = 'Restart';
+      } else {
+        loopInterval();
+        startButton.innerText = 'Pause';
+      }
+      isPaused = !isPaused;
+    });
+
     function loopInterval() {
-        if (autodown() === true) {
-          loop = setTimeout(loopInterval, speed);
-        }else{
-          //着地後の処理
-          
-            console.log("着地");
+        if (!isPaused) {
+          // 一時停止中でない場合にのみ自動落下を実行
+          if (autodown() === true) {
+            loop = setTimeout(loopInterval, speed);
+          } else {
+            // 落下が止まった場合の処理
             randomNumber = nextRandomNumber
-            console.log(randomNumber)
-            //copyfileddrow(field)では落ちてきたテトリミノは消える
             copyfielddrow(copyField);
-            disapper(copyField, point)
-            point = disapper(field, point)
-            // console.log(copyField);
-            // console.log(field);
-                if(mainTetrimino(next) == "gameover"){
-                    console.log("12345678")
-                    clearTimeout(loop);
-        
-                    playerpoint = score(point -10 )
-        
-                    winningMessageTextElement.innerText = `Score: ${playerpoint}`
-                    winningMessageElement.classList.add('show');
-                    restartButton.addEventListener('click', function(){location.reload()});
-                    return
-                }
-            // console.log("aaaaaaaaaaaaaaaaaa")
-            // console.log(field)
+            disapper(copyField, point);
+            point = disapper(field, point);
+            if (mainTetrimino(next) == "gameover") {
+              // ゲームオーバーの処理
+              clearTimeout(loop);
+              playerpoint = score(point - 10);
+              winningMessageTextElement.innerText = `Score: ${playerpoint}`;
+              winningMessageElement.classList.add('show');
+              restartButton.addEventListener('click', function(){location.reload()});
+              return;
+            }
+            // 次のテトリミノをセットし、ループを再開
             nextlist = nextTetrimino();
             next = nextlist[0]
             nextRandomNumber = nextlist[1]
-            loopInterval()
+            loopInterval();
+          }
+        } else {
+          // 一時停止中の場合、再帰的に関数を呼び出して待機
+          loop = setTimeout(loopInterval, speed);
         }
-    }
+      }
+
+        
+    
     
   
-    //メイン関数
+  //メイン関数
     function main() {
-      mainTetrimino(tetriminoPattern);//最初のテトリミノ
-      loopInterval()
-      
+        mainTetrimino(tetriminoPattern);//最初のテトリミノ
+        loopInterval()
     }
     main()
-  
-  });
+
+});
 
   /*
   randomNum
@@ -537,3 +577,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   */
+
+    /*
+    ホールド機能
+    入れ替えるとき回転関数で用いた真ん中の座標を使う？
+    ホールドボタンが押される
+    テトリミノの番号を記憶
+    テトリミノの中心座標を取得
+    ホールドされているテトリミノの番号を取得
+    ホールド側
+    グレーで塗る
+    テトリミノを番号を用いて表示
+    Main側
+    取得した中心座標とホールド手捕り物番号を用いて表示
+    */
+
+    /*
+    setintervalを関数にする引数無し
+    例
+    function interval(){
+        setinterval( 300)kiさんに書き方を聞く
+    }
+    gameoverの処理や一列が消えるなどの処理はここに書く
+    underのunderjudgeのところでsetinterval関数を呼び出す
+    引数としてnextなどを送りたいから遅れる関数をつくる
+    例
+    function sent(){
+        nextlist = nextTetrimino();
+        next = nextlist[0]
+        nextRandomNumber = nextlist[1]
+    }
+    underの中でsentとintervalを呼ぶ
+    */
