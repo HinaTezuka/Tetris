@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   //HTMLのスコア表示のため↓
   const scoreDisplay = document.querySelector('#score')
-
-  const speed = 500;
+  const speed = 5000;
   var point = 0;
   function tetrimino(num){
 
@@ -78,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
   //衝突判定
   //衝突したらTrue
   function judge(x, y, field){
-      return field[y][x] != 0
+    console.log("sss",field[y][x] != 0)
+    return field[y][x] != 0
   }
   //positionはfield上
   const twidht = 4
@@ -111,8 +111,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function underjudge(field, position){
       for(let i = 0; i < position.length; i++){
           //下にブロックがあったら
+          // console.log(position)
+          console.log(position[i][1])
+          
           if (position[i][1] === 19 || judge(position[i][0], position[i][1]+1, field)){
-              return true
+            console.log("wwwww")  
+            return true
           }
       }
       return false
@@ -122,7 +126,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function under(field, position){
       for(let i = 0; i < position.length; i++){
           //下にブロックがあったら
-          if (underjudge(position[i][0],position[i][1],field)){
+          if (underjudge(field,[[position[i][0],position[i][1]]])){
+            console.log("1231121")
             for (let i = 0; i < position.length; i++){
               let x = position[i][0]
               let y = position[i][1]
