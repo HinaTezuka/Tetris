@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
 
-  const speed = 500;
+  const speed = 10000;
   var point = 0;
   function tetrimino(num){
 
@@ -218,6 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
           let Y = Math.floor(y*Math.cos(Math.PI/2) + x*Math.sin(Math.PI/2) + (centery/4))
           newPosition.push([X,Y])
       }
+      
       newPosition = revisePositionIfOverflow(newPosition)
       return newPosition
   }
