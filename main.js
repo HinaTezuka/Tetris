@@ -3,7 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const scoreDisplay = document.querySelector('#score')
 
   const highscoreDisplay = document.querySelector('#highscore')
-  highscoreDisplay.innerHTML = localStorage.getItem('highscore')
+  if (localStorage){
+    highscoreDisplay.innerHTML = localStorage.getItem('highscore')
+  }else{
+    localStorage.setItem('highscore', 0);
+  }
+
 
   const speed = 500;
   var point = 0;
