@@ -2,7 +2,7 @@
 URL：https://teamdev-g.github.io/work-space/
 
 ## 開発者一覧
-・https://github.com/HinaTezuka<br>
+・leader: https://github.com/HinaTezuka<br>
 ・https://github.com/kolomame<br>
 ・https://github.com/tontatonta<br>
 
